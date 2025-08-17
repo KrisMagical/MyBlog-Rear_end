@@ -15,8 +15,8 @@ public class PostSummaryDto {
     private Long id;
     private String title;
     private String slug;
-    private String exception;
-    private LocalDateTime createdAy;
+    private String excerpt;
+    private LocalDateTime createdAt;
     private Integer likeCount;
     private Integer dislikeCount;
     private Integer viewCount;

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PostSummaryMapper {
-    @Mapping(target = "exception", expression = "java(post.getContent()!=null&&post.getContent().length>150?post.getContent().substring(0，150)+\"...\":post.getContent())")
+    @Mapping(target = "excerpt", expression = "java(post.getContent()!=null&&post.getContent().length()>150?post.getContent().substring(0,150)+\"...\":post.getContent())")
     @Mapping(target = "categoryName", source = "category.name")
     PostSummaryDto toPostSummaryDto(Post post);
 
