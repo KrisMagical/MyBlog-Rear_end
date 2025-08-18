@@ -28,7 +28,10 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:5173", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT}, allowCredentials = "true", maxAge = 3600)
 public class PostController {
     @Value("${upload.image.path}")
-    private String uploadPath;
+    private String imageUploadPath;
+
+    @Value("${upload.video.path}")
+    private String videoUploadPath;
     private PostService postService;
 
     @GetMapping("/category/{slug}")
@@ -73,7 +76,7 @@ public class PostController {
                 return new ResponseEntity<>("File is empty", HttpStatus.NOT_FOUND);
             }
             String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filepath = Paths.get(uploadPath, filename);
+            Path filepath = Paths.get(imageUploadPath, filename);
             Files.createDirectories(filepath.getParent());
             Files.write(filepath, file.getBytes());
 
@@ -84,7 +87,7 @@ public class PostController {
         }
         /*
             图片保存路径
-            upload.image.path=/var/www/blog/images
+            upload.image.path=/var/www/blog/image → /images/{filename}s
         */
     }
 
@@ -100,4 +103,36 @@ public class PostController {
         PostDetailDto updatedPost = postService.updatePostFromMarkDown(id, mdContent, categorySlug);
         return new ResponseEntity<>(updatedPost, HttpStatus.OK);
     }
+
+    @PostMapping("/upload/video")
+    public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
+            }
+            String originalFilename = file.getOriginalFilename();
+            String ext = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".") + 1) : "";
+            if (!List.of("mp4", "webm", "ogg").contains(ext.toLowerCase())) {
+                return new ResponseEntity<>("Unsupported video format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+            }
+
+            String filename = UUID.randomUUID() + "_" + originalFilename;
+            Path filepath = Paths.get(videoUploadPath, "Videos", filename);
+            Files.createDirectories(filepath.getParent());
+            Files.write(filepath, file.getBytes());
+
+            String fileUrl = "/videos/" + filename;// 前端访问路径
+            return new ResponseEntity<>(fileUrl,HttpStatus.OK);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload Failed");
+        }
+    }
+    /*
+    Markdown 文件上传时
+    因为/create-md 和 /update-md 已经把 Markdown 内容读进数据库了，所以只要 Markdown 文件里包含视频 URL，比如：
+    @[video](/videos/test.mp4)
+    @[video](https://www.youtube.com/embed/abc123)
+    前端渲染时就能识别。后端这里 不需要特殊解析，因为 content 就是 Markdown 原文，交由前端去渲染 <video> 或 <iframe>。
+    视频文件夹：/var/www/blog/videos → /videos/{filename}
+     */
 }
