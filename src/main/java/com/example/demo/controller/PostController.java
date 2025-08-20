@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +50,7 @@ public class PostController {
         return new ResponseEntity<>(postDetailDto, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ROOT')")
     @PostMapping("/create")
     public ResponseEntity<PostDetailDto> createPost(@RequestParam String categorySlug, @RequestBody PostDetailDto postDetailDto) {
         PostDetailDto postDetailDto_create = postService.createPost(postDetailDto, categorySlug);
@@ -57,7 +59,7 @@ public class PostController {
         }
         return new ResponseEntity<>(postDetailDto_create, HttpStatus.CREATED);
     }
-
+    @PreAuthorize("hasRole('ROOT')")
     @PostMapping(value = "/create-md", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<PostDetailDto> createPostFromMarkdown(@RequestParam String categorySlug, @RequestParam("file") MultipartFile mdFile) throws IOException {
         String mdContent = new String(mdFile.getBytes(), StandardCharsets.UTF_8);
@@ -65,7 +67,7 @@ public class PostController {
         dto.setContent(mdContent);
         return new ResponseEntity<>(postService.createPost(dto, categorySlug), HttpStatus.OK);
     }
-
+    @PreAuthorize("hasRole('ROOT')")
     @PostMapping("/upload/image")
     public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -87,20 +89,20 @@ public class PostController {
             upload.image.path=/var/www/blog/image → /images/{filename}s
         */
     }
-
+    @PreAuthorize("hasRole('ROOT')")
     @PutMapping("/update/{id}")
     public ResponseEntity<PostDetailDto> updatePost(@PathVariable Long id, @RequestParam(required = false) String categorySlug, @RequestBody PostDetailDto postDetailDto) {
         PostDetailDto updatedPost = postService.updatePost(id, postDetailDto, categorySlug);
         return new ResponseEntity<>(updatedPost, HttpStatus.OK);
     }
-
+    @PreAuthorize("hasRole('ROOT')")
     @PutMapping(value = "/update-md/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<PostDetailDto> updatePostFromMarkdown(@PathVariable Long id, @RequestParam(required = false) String categorySlug, @RequestParam("file") MultipartFile mdFile) throws IOException {
         String mdContent = new String(mdFile.getBytes(), StandardCharsets.UTF_8);
         PostDetailDto updatedPost = postService.updatePostFromMarkDown(id, mdContent, categorySlug);
         return new ResponseEntity<>(updatedPost, HttpStatus.OK);
     }
-
+    @PreAuthorize("hasRole('ROOT')")
     @PostMapping("/upload/video")
     public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
         try {

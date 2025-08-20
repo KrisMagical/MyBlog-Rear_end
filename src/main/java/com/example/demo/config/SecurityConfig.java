@@ -33,12 +33,15 @@ public class SecurityConfig {
     private MyUserDetailsService myUserDetailsService;
     private JwtFilter jwtFilter;
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/posts/**",
-            "/api/comments/**",
-            "/api/post/**",
+            "/api/posts/{slug}",
+            "/api/posts/category/**",
             "/api/categories/**",
-            "/api/category/**",
+            "/api/comments/**",
+
+            // 登录接口
             "/login",
+
+            // Swagger 文档
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"

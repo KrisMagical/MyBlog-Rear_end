@@ -30,12 +30,15 @@ public class JwtFilter extends OncePerRequestFilter {
     private MyUserDetailsService myUserDetailsService;
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private static final List<String> WHITELIST = List.of(
-            "/api/posts/**",
-            "/api/comments/**",
-            "/api/post/**",
+            "/api/posts/{slug}",
+            "/api/posts/category/**",
             "/api/categories/**",
-            "/api/category/**",
+            "/api/comments/**",
+
+            // 登录接口
             "/login",
+
+            // Swagger 文档
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"

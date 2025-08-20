@@ -71,10 +71,13 @@ public class CommentService {
         }
     }
 
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, String email) {
         Comment comment = commentRepository.findById(commentId);
         if (comment == null) {
             throw new RuntimeException("Comment Not Found");
+        }
+        if (!comment.getEmail().equals(email)) {
+            throw new RuntimeException("You are not allowed to delete this comment");
         }
         commentRepository.delete(comment);
     }
