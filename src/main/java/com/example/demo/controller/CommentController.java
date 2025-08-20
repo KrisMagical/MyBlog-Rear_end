@@ -4,7 +4,6 @@ import com.example.demo.dto.CommentDto;
 import com.example.demo.dto.CreateCommentRequest;
 import com.example.demo.service.CommentService;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@AllArgsConstructor()
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping("/api/comments")
-@CrossOrigin(origins = "http://localhost:5173", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE}, allowCredentials = "true", maxAge = 3600)
 public class CommentController {
     private CommentService commentService;
 

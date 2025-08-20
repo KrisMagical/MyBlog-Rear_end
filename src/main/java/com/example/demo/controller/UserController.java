@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", methods = {RequestMethod.POST}, allowCredentials = "true", maxAge = 3600)
 public class UserController {
     private UserService userService;
 

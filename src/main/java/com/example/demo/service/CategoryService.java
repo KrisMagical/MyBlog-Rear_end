@@ -4,16 +4,15 @@ import com.example.demo.dto.CategoryDto;
 import com.example.demo.mapping.CategoryMapping;
 import com.example.demo.repository.CategoryRepository;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Data;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@AllArgsConstructor()
-@RequiredArgsConstructor
+@AllArgsConstructor
+@Data
 @Transactional
 public class CategoryService {
     private CategoryRepository categoryRepository;

@@ -9,15 +9,15 @@ import com.example.demo.model.Post;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.PostRepository;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@AllArgsConstructor()
-@RequiredArgsConstructor
+@AllArgsConstructor
+@Data
 @Transactional
 public class PostService {
     private PostRepository postRepository;

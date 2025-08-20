@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -47,6 +48,14 @@ public class Post {
     @Column(nullable = false)
     @Builder.Default
     private Integer viewCount = 0;
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<Comment> comments;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    public List<Comment> getComments() {
+        return comments == null ? List.of() : List.copyOf(comments);
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments == null ? new ArrayList<>() : new ArrayList<>(comments);
+    }
 }

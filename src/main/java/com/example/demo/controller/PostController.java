@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.dto.PostDetailDto;
 import com.example.demo.dto.PostSummaryDto;
 import com.example.demo.service.PostService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,17 +21,15 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@AllArgsConstructor()
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
-@CrossOrigin(origins = "http://localhost:5173", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT}, allowCredentials = "true", maxAge = 3600)
 public class PostController {
     @Value("${upload.image.path}")
     private String imageUploadPath;
 
     @Value("${upload.video.path}")
     private String videoUploadPath;
-    private PostService postService;
+    private final PostService postService;
 
     @GetMapping("/category/{slug}")
     public ResponseEntity<List<PostSummaryDto>> getPostByCategory(@PathVariable String slug) {
