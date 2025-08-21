@@ -56,11 +56,12 @@ public class PostService {
     }
 
     public PostDetailDto updatePost(Long id, PostDetailDto updatePostDetailDto, String categorySlug) {
-        Post existingPost = postRepository.findById(id);
+        Post existingPost = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post Not Found"));
         if (existingPost == null) {
             throw new RuntimeException("Post Not Found.");
         }
-        if (categorySlug != null || !categorySlug.isBlank()) {
+        if (categorySlug != null && !categorySlug.isBlank()) {
             Category category = categoryRepository.findBySlug(categorySlug);
             if (category == null) {
                 throw new RuntimeException("Category Not Found");
@@ -81,11 +82,12 @@ public class PostService {
     }
 
     public PostDetailDto updatePostFromMarkDown(Long id, String mdContext, String categorySlug) {
-        Post existingPost = postRepository.findById(id);
+        Post existingPost = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post Not Found"));
         if (existingPost == null) {
             throw new RuntimeException("Post Not Found");
         }
-        if (categorySlug != null || !categorySlug.isBlank()) {
+        if (categorySlug != null && !categorySlug.isBlank()) {
             Category category = categoryRepository.findBySlug(categorySlug);
             if (category == null) {
                 throw new RuntimeException("category Not Found");

@@ -29,7 +29,8 @@ public class CommentService {
     private JavaMailSender mailSender;
 
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        Post post = postRepository.findById(postId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post Not Found"));
         if (post != null) {
             return commentMapper.toCommentDtoList(post.getComments());
         } else {
@@ -38,7 +39,8 @@ public class CommentService {
     }
 
     public CommentDto addComment(Long postId, CreateCommentRequest request) {
-        Post post = postRepository.findById(postId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post Not Found"));
         if (post == null) {
             throw new RuntimeException("Post Not Found.");
         }
@@ -72,7 +74,8 @@ public class CommentService {
     }
 
     public CommentDto deleteComment(Long commentId, String email) {
-        Comment comment = commentRepository.findById(commentId);
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment Not Found"));
         if (comment == null) {
             throw new RuntimeException("Comment Not Found");
         }
