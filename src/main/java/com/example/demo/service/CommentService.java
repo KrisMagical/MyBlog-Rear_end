@@ -71,7 +71,7 @@ public class CommentService {
         }
     }
 
-    public void deleteComment(Long commentId, String email) {
+    public CommentDto deleteComment(Long commentId, String email) {
         Comment comment = commentRepository.findById(commentId);
         if (comment == null) {
             throw new RuntimeException("Comment Not Found");
@@ -80,5 +80,6 @@ public class CommentService {
             throw new RuntimeException("You are not allowed to delete this comment");
         }
         commentRepository.delete(comment);
+        return commentMapper.toCommentDto(comment);
     }
 }
