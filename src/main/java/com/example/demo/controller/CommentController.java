@@ -16,7 +16,7 @@ import java.util.List;
 public class CommentController {
     private CommentService commentService;
 
-    @GetMapping("post/{postId}")
+    @GetMapping("/post/{postId}")
     public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long postId) {
         List<CommentDto> commentDto = commentService.getCommentsByPostId(postId);
         if (commentDto == null) {

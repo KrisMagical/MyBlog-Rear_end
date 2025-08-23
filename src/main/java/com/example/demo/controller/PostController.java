@@ -1,8 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.LikeResponseDto;
 import com.example.demo.dto.PostDetailDto;
 import com.example.demo.dto.PostSummaryDto;
+import com.example.demo.service.LikeLogService;
 import com.example.demo.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,7 +34,7 @@ public class PostController {
     @Value("${upload.video.path}")
     private String videoUploadPath;
     private final PostService postService;
-
+    private final LikeLogService likeLogService;
     @GetMapping("/category/{slug}")
     public ResponseEntity<List<PostSummaryDto>> getPostByCategory(@PathVariable String slug) {
         List<PostSummaryDto> postSummaryDto = postService.getPostByCategorySlug(slug);
@@ -134,4 +137,28 @@ public class PostController {
     前端渲染时就能识别。后端这里 不需要特殊解析，因为 content 就是 Markdown 原文，交由前端去渲染 <video> 或 <iframe>。
     视频文件夹：/var/www/blog/videos → /videos/{filename}
      */
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<LikeResponseDto> likePost(@PathVariable Long postId, @RequestParam boolean positive, HttpServletRequest request) {
+        String identifier = request.getRemoteAddr(); // 获取客户端 IP 作为 identifier
+        try {
+            likeLogService.addLikeOrDislike(postId, identifier, positive);
+            LikeResponseDto response = new LikeResponseDto(
+                    likeLogService.countLikesByPostId(postId),
+                    likeLogService.countDisLikesByPostId(postId)
+            );
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new LikeResponseDto(0, 0, e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+    @GetMapping("/{slug}/likes")
+    public ResponseEntity<LikeResponseDto> getLikeAndDislikeCount(@PathVariable String slug) {
+        try {
+            LikeResponseDto response = likeLogService.getLikeAndDislikeCountBySlug(slug);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new LikeResponseDto(0, 0, e.getMessage()), HttpStatus.NOT_FOUND);
+        }
+    }
 }
