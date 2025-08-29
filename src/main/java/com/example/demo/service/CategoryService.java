@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.CategoryDto;
 import com.example.demo.mapping.CategoryMapping;
+import com.example.demo.model.Category;
 import com.example.demo.repository.CategoryRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,5 +24,26 @@ public class CategoryService {
                 .stream()
                 .map(categoryMapping::toCategoryDto)
                 .toList();
+    }
+
+    public CategoryDto createCategory(CategoryDto categoryDto) {
+        if (categoryRepository.existsByName(categoryDto.getName())) {
+            throw new RuntimeException("Category name already exists!");
+        }
+        if (categoryRepository.existsBySlug(categoryDto.getSlug())) {
+            throw new RuntimeException("Category slug already exists!");
+        }
+        Category category = categoryMapping.toCategoryEntity(categoryDto);
+        Category category_save = categoryRepository.save(category);
+        return categoryMapping.toCategoryDto(category_save);
+    }
+
+    public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category Not Found."));
+        category.setName(categoryDto.getName());
+        category.setSlug(categoryDto.getSlug());
+        Category category_update=categoryRepository.save(category);
+        return categoryMapping.toCategoryDto(category_update);
     }
 }

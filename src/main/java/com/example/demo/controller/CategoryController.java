@@ -5,9 +5,7 @@ import com.example.demo.service.CategoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +22,24 @@ public class CategoryController {
         List<CategoryDto> categoryDto = categoryService.getAllCategories();
         if (categoryDto == null) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(categoryDto, HttpStatus.OK);
+    }
+
+    @PostMapping
+    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
+        CategoryDto categoryDto_save = categoryService.createCategory(categoryDto);
+        if (categoryDto_save == null) {
+            throw new RuntimeException("Create Failed");
+        }
+        return new ResponseEntity<>(categoryDto_save, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        CategoryDto categoryDto_update = categoryService.updateCategory(id, categoryDto);
+        if (categoryDto_update == null) {
+            throw new RuntimeException("Update Failed");
         }
         return new ResponseEntity<>(categoryDto, HttpStatus.OK);
     }
