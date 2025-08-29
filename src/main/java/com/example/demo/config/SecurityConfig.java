@@ -34,6 +34,8 @@ public class SecurityConfig {
     private JwtFilter jwtFilter;
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/posts/{slug}",
+            "/api/posts/{postId}/like",
+            "/api/posts/{slug}/likes",
             "/api/posts/category/**",
             "/api/categories/**",
             "/api/comments/**",

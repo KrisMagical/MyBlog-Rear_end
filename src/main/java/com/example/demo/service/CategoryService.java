@@ -38,9 +38,8 @@ public class CategoryService {
         return categoryMapping.toCategoryDto(category_save);
     }
 
-    public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category Not Found."));
+    public CategoryDto updateCategory(String name, CategoryDto categoryDto) {
+        Category category = categoryRepository.findByName(name);
         category.setName(categoryDto.getName());
         category.setSlug(categoryDto.getSlug());
         Category category_update=categoryRepository.save(category);

@@ -31,6 +31,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private static final List<String> WHITELIST = List.of(
             "/api/posts/{slug}",
+            "/api/posts/{postId}/like",
+            "/api/posts/{slug}/likes",
             "/api/posts/category/**",
             "/api/categories/**",
             "/api/comments/**",

@@ -35,9 +35,9 @@ public class CategoryController {
         return new ResponseEntity<>(categoryDto_save, HttpStatus.OK);
     }
 
-    @PostMapping("/{id}")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
-        CategoryDto categoryDto_update = categoryService.updateCategory(id, categoryDto);
+    @PutMapping("/{name}")
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable String name, @RequestBody CategoryDto categoryDto) {
+        CategoryDto categoryDto_update = categoryService.updateCategory(name, categoryDto);
         if (categoryDto_update == null) {
             throw new RuntimeException("Update Failed");
         }
