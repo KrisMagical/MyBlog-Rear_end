@@ -15,14 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -62,81 +56,63 @@ public class PostController {
         }
         return new ResponseEntity<>(postDetailDto_create, HttpStatus.CREATED);
     }
+
     @PreAuthorize("hasRole('ROOT')")
     @PostMapping(value = "/create-md", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<PostDetailDto> createPostFromMarkdown(@RequestParam String categorySlug, @RequestParam("file") MultipartFile mdFile) throws IOException {
-        String mdContent = new String(mdFile.getBytes(), StandardCharsets.UTF_8);
-        PostDetailDto dto = new PostDetailDto();
-        dto.setContent(mdContent);
-        return new ResponseEntity<>(postService.createPost(dto, categorySlug), HttpStatus.OK);
+    public ResponseEntity<PostDetailDto> createPostFromMarkdown(@RequestParam String categorySlug, @RequestParam("file") MultipartFile mdFile,@RequestParam String slug,@RequestParam(required = false) String title) {
+        return new ResponseEntity<>(postService.createPostFromMarkdown(categorySlug, mdFile,slug,title), HttpStatus.CREATED);
     }
-    @PreAuthorize("hasRole('ROOT')")
-    @PostMapping("/upload/image")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-        try {
-            if (file.isEmpty()) {
-                return new ResponseEntity<>("File is empty", HttpStatus.NOT_FOUND);
-            }
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filepath = Paths.get(imageUploadPath, filename);
-            Files.createDirectories(filepath.getParent());
-            Files.write(filepath, file.getBytes());
 
-            String fileUrl = "/images/" + filename;// 前端访问路径
-            return ResponseEntity.ok(fileUrl);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
-        }
-        /*
-            图片保存路径
-            upload.image.path=/var/www/blog/image → /images/{filename}s
-        */
-    }
     @PreAuthorize("hasRole('ROOT')")
     @PutMapping("/update/{id}")
     public ResponseEntity<PostDetailDto> updatePost(@PathVariable Long id, @RequestParam(required = false) String categorySlug, @RequestBody PostDetailDto postDetailDto) {
         PostDetailDto updatedPost = postService.updatePost(id, postDetailDto, categorySlug);
         return new ResponseEntity<>(updatedPost, HttpStatus.OK);
     }
+
     @PreAuthorize("hasRole('ROOT')")
     @PutMapping(value = "/update-md/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<PostDetailDto> updatePostFromMarkdown(@PathVariable Long id, @RequestParam(required = false) String categorySlug, @RequestParam("file") MultipartFile mdFile) throws IOException {
-        String mdContent = new String(mdFile.getBytes(), StandardCharsets.UTF_8);
-        PostDetailDto updatedPost = postService.updatePostFromMarkDown(id, mdContent, categorySlug);
-        return new ResponseEntity<>(updatedPost, HttpStatus.OK);
+    public ResponseEntity<PostDetailDto> updatePostFromMarkdown(@PathVariable Long id, @RequestParam(required = false) String categorySlug, @RequestParam("file") MultipartFile mdFile) {
+        return new ResponseEntity<>(postService.updatePostFromMarkDown(id, mdFile, categorySlug), HttpStatus.OK);
     }
+
     @PreAuthorize("hasRole('ROOT')")
-    @PostMapping("/upload/video")
+    @PostMapping(value = "/upload/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileUrl = postService.uploadImage(file);
+            return ResponseEntity.ok(fileUrl);
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("File is Empty")) {
+                return new ResponseEntity<>("File is Empty", HttpStatus.NOT_FOUND);
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed");
+        }
+    }
+
+
+    @PreAuthorize("hasRole('ROOT')")
+    @PostMapping(value = "/upload/video", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
         try {
-            if (file.isEmpty()) {
-                return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
-            }
-            String originalFilename = file.getOriginalFilename();
-            String ext = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".") + 1) : "";
-            if (!List.of("mp4", "webm", "ogg").contains(ext.toLowerCase())) {
+            String fileUrl = postService.uploadVideo(file);
+            return ResponseEntity.ok(fileUrl);
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("File is Empty")) {
+                return new ResponseEntity<>("File is Empty", HttpStatus.BAD_REQUEST);
+            } else if (e.getMessage().equals("Unsupported video format")) {
                 return new ResponseEntity<>("Unsupported video format", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
             }
-
-            String filename = UUID.randomUUID() + "_" + originalFilename;
-            Path filepath = Paths.get(videoUploadPath, "Videos", filename);
-            Files.createDirectories(filepath.getParent());
-            Files.write(filepath, file.getBytes());
-
-            String fileUrl = "/videos/" + filename;// 前端访问路径
-            return new ResponseEntity<>(fileUrl,HttpStatus.OK);
-        } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload Failed");
         }
     }
-    /*
-    Markdown 文件上传时
-    因为/create-md 和 /update-md 已经把 Markdown 内容读进数据库了，所以只要 Markdown 文件里包含视频 URL，比如：
-    @[video](/videos/test.mp4)
-    @[video](https://www.youtube.com/embed/abc123)
-    前端渲染时就能识别。后端这里 不需要特殊解析，因为 content 就是 Markdown 原文，交由前端去渲染 <video> 或 <iframe>。
-    视频文件夹：/var/www/blog/videos → /videos/{filename}
-     */
+
+    @PreAuthorize("hasRole('ROOT')")
+    @DeleteMapping("/{slug}")
+    public ResponseEntity<String> deletePostBySlug(@PathVariable String slug){
+        postService.deletePostBySlug(slug);
+        return ResponseEntity.ok(slug);
+    }
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<LikeResponseDto> likePost(@PathVariable Long postId, @RequestParam boolean positive, HttpServletRequest request) {
@@ -152,6 +128,7 @@ public class PostController {
             return new ResponseEntity<>(new LikeResponseDto(0, 0, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
+
     @GetMapping("/{slug}/likes")
     public ResponseEntity<LikeResponseDto> getLikeAndDislikeCount(@PathVariable String slug) {
         try {
@@ -161,4 +138,5 @@ public class PostController {
             return new ResponseEntity<>(new LikeResponseDto(0, 0, e.getMessage()), HttpStatus.NOT_FOUND);
         }
     }
+
 }

@@ -21,6 +21,7 @@ public class LikeLogService {
     public int countDisLikesByPostId(Long postId) {
         return likeLogRepository.countByPostIdAndPositive(postId, false);
     }
+
     public void addLikeOrDislike(Long postId, String identifier, boolean positive) {
         // 检查文章是否存在
         Post post = postRepository.findById(postId)
@@ -47,6 +48,7 @@ public class LikeLogService {
             likeLogRepository.save(likeLog);
         }
     }
+
     public LikeResponseDto getLikeAndDislikeCountBySlug(String slug) {
         Post post = postRepository.findBySlug(slug);
         if (post == null) {
@@ -56,5 +58,9 @@ public class LikeLogService {
                 countLikesByPostId(post.getId()),
                 countDisLikesByPostId(post.getId())
         );
+    }
+
+    public void deleteAllByPostId(Long postId) {
+        likeLogRepository.deleteAllByPostId(postId);
     }
 }

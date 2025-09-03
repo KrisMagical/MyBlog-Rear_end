@@ -9,4 +9,6 @@ public interface LikeLogRepository extends JpaRepository<LikeLog, Long> {
     int countByPostIdAndPositive(Long postId,boolean positive);
     boolean existsByPostIdAndIdentifier(Long postId, String identifier);
     LikeLog findByPostIdAndIdentifier(Long postId, String identifier);
+
+    void deleteAllByPostId(Long postId);
 }
