@@ -125,7 +125,7 @@ public class PostController {
             );
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(new LikeResponseDto(0, 0, e.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new LikeResponseDto(0, 0, e.getMessage()), HttpStatus.CONFLICT);
         }
     }
 
