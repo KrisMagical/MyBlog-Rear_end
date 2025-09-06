@@ -36,6 +36,8 @@ public class JwtFilter extends OncePerRequestFilter {
             "/api/posts/category/**",
             "/api/categories/**",
             "/api/comments/**",
+            "/api/pages",
+            "/api/pages/{slug}",
 
             // 登录接口
             "/login",
