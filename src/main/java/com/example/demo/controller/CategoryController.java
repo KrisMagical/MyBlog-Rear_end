@@ -23,7 +23,7 @@ public class CategoryController {
         if (categoryDto == null) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(categoryDto, HttpStatus.OK);
+        return ResponseEntity.ok(categoryDto);
     }
 
     @PostMapping
@@ -41,6 +41,6 @@ public class CategoryController {
         if (categoryDto_update == null) {
             throw new RuntimeException("Update Failed");
         }
-        return new ResponseEntity<>(categoryDto, HttpStatus.OK);
+        return new ResponseEntity<>(categoryDto_update, HttpStatus.OK);
     }
 }

@@ -4,6 +4,8 @@ import com.example.demo.model.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Category findBySlug(String slug);
@@ -13,5 +15,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsBySlug(String slug);
 
 
-    Category findByName(String name);
+    Optional<Category> findByName(String name);
 }

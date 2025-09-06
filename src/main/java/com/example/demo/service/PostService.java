@@ -14,15 +14,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -142,8 +142,10 @@ public class PostService {
         if (file == null || file.isEmpty()) {
             throw new RuntimeException("File is Empty");
         }
-        String original = file.getOriginalFilename();
-        String filename = UUID.randomUUID() + "_" + (original == null ? "image" : original);
+        String original = Optional.ofNullable(file.getOriginalFilename()).orElse("image");
+        String safe = sanitizeFilenameKeepExt(original);
+        String filename = UUID.randomUUID() + "_" + safe;
+
         Path filepath = Paths.get(imageUploadPath, filename);
         try {
             Files.createDirectories(filepath.getParent());
@@ -151,7 +153,8 @@ public class PostService {
         } catch (IOException e) {
             throw new RuntimeException("Upload Failed");
         }
-        return "/images/" + filename;
+        String encoded = UriUtils.encodePathSegment(filename, StandardCharsets.UTF_8);
+        return "/images/" + encoded;
         /*
             图片保存路径
             upload.image.path=/var/www/blog/image → /images/{filename}s
@@ -168,7 +171,12 @@ public class PostService {
         if (!allowed.contains(ext.toLowerCase())) {
             throw new RuntimeException("Unsupported video format");
         }
-        String filename = UUID.randomUUID() + "_" + (original == null ? ("video." + ext) : original);
+
+        String safe = sanitizeFilenameKeepExt(original);
+        if (!safe.toLowerCase(Locale.ROOT).endsWith("." + ext)) {
+            safe = safe + "." + ext;
+        }
+        String filename = UUID.randomUUID() + "_" + safe;
         Path filepath = Paths.get(videoUploadPath, "Videos", filename);
         try {
             Files.createDirectories(filepath.getParent());
@@ -176,7 +184,8 @@ public class PostService {
         } catch (IOException e) {
             throw new RuntimeException("Upload Failed");
         }
-        return "/videos/" + filename;
+        String encoded = UriUtils.encodePathSegment(filename, StandardCharsets.UTF_8);
+        return "/videos/" + encoded;
         /*
         Markdown 文件上传时
         因为/create-md 和 /update-md 已经把 Markdown 内容读进数据库了，所以只要 Markdown 文件里包含视频 URL，比如：
@@ -200,6 +209,40 @@ public class PostService {
     }
 
     //Tools Methods
+    private static final Pattern UNSAFE_CHARS =
+            Pattern.compile("[\\\\/:*?\"<>|#%&{}$!@`^~;+=]");
+
+    private String sanitizeFilenameKeepExt(String original) {
+        String name = original.trim();
+
+        // 分离扩展名（最后一个点）
+        String ext = "";
+        int dot = name.lastIndexOf('.');
+        if (dot >= 0 && dot < name.length() - 1) {
+            ext = name.substring(dot);           // 包含 '.'
+            name = name.substring(0, dot);
+        }
+
+        // 空白 → 下划线；去除不安全字符
+        name = name.replaceAll("\\s+", "_");
+        name = UNSAFE_CHARS.matcher(name).replaceAll("_");
+
+        // 避免全空
+        if (name.isBlank()) name = "file";
+
+        // 控制主体长度，给 UUID 和扩展名留足空间（总长 < 200 较稳妥）
+        if (name.length() > 160) {
+            name = name.substring(0, 160);
+        }
+
+        // 扩展名也防御性裁剪（很少见）
+        if (ext.length() > 16) {
+            ext = ext.substring(0, 16);
+        }
+
+        return name + ext;
+    }
+
     private String readMultipartAsUtf8(MultipartFile file) {
         try {
             return new String(getFileBytes(file), StandardCharsets.UTF_8);

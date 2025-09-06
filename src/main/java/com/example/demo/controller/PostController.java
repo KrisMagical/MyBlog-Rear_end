@@ -22,11 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController {
-    @Value("${upload.image.path}")
-    private String imageUploadPath;
-
-    @Value("${upload.video.path}")
-    private String videoUploadPath;
     private final PostService postService;
     private final LikeLogService likeLogService;
     @GetMapping("/category/{slug}")
