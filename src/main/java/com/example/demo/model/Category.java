@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.util.List;
+
 @Entity
 @Table(name = "categories")
 @Data
@@ -20,6 +22,6 @@ public class Category {
     private String name;
     @Column(nullable = false, unique = true, length = 100)
     private String slug;
-    @OneToMany(mappedBy = "category",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
 }

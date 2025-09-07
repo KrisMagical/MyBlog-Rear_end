@@ -46,4 +46,10 @@ public class CategoryService {
         Category category_update = categoryRepository.save(category);
         return categoryMapping.toCategoryDto(category_update);
     }
+
+    public void deleteCategory(String name) {
+        Category category = categoryRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Category Not Found: " + name));
+        categoryRepository.delete(category);
+    }
 }
