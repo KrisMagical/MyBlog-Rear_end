@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,8 @@ public class CommentService {
         return commentMapper.toCommentDto(comment);
     }
 
-    private void sendCommentNotificationEmail(Comment comment) {
+    @Async
+    public void sendCommentNotificationEmail(Comment comment) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -59,7 +61,7 @@ public class CommentService {
             helper.setSubject("New Comment On Post: " + comment.getPost().getTitle());
             String formattedDate = comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             String content = String.format(
-                    "Name: %s\nEmail: %s\nDate: %s\nContent: %s\nPost Link: http://yourdomain.com/posts/%s",
+                    "Name: %s\nEmail: %s\nDate: %s\nContent: %s\nPost Link: http://localhost:5173/posts/%s",
                     comment.getName(),
                     comment.getEmail(),
                     formattedDate,
