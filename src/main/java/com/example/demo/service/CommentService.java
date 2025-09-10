@@ -7,16 +7,12 @@ import com.example.demo.model.Comment;
 import com.example.demo.model.Post;
 import com.example.demo.repository.CommentRepository;
 import com.example.demo.repository.PostRepository;
-import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -27,7 +23,7 @@ public class CommentService {
     private CommentRepository commentRepository;
     private PostRepository postRepository;
     private CommentMapper commentMapper;
-    private JavaMailSender mailSender;
+    private NotificationService notificationService;
 
     public List<CommentDto> getCommentsByPostId(Long postId) {
         Post post = postRepository.findById(postId)
@@ -48,31 +44,8 @@ public class CommentService {
         Comment comment = commentMapper.toCommentEntity(request);
         comment.setPost(post);
         commentRepository.save(comment);
-        sendCommentNotificationEmail(comment);
+        notificationService.sendCommentNotification(comment);
         return commentMapper.toCommentDto(comment);
-    }
-
-    @Async
-    public void sendCommentNotificationEmail(Comment comment) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo("sunqixian4@gmail.com");
-            helper.setSubject("New Comment On Post: " + comment.getPost().getTitle());
-            String formattedDate = comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            String content = String.format(
-                    "Name: %s\nEmail: %s\nDate: %s\nContent: %s\nPost Link: http://localhost:5173/posts/%s",
-                    comment.getName(),
-                    comment.getEmail(),
-                    formattedDate,
-                    comment.getContent(),
-                    comment.getPost().getSlug()
-            );
-            helper.setText(content);
-            mailSender.send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to send email notification", e);
-        }
     }
 
     public CommentDto deleteComment(Long commentId, String email) {
